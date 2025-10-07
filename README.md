@@ -59,6 +59,13 @@ See `requirements.txt` for full list. Key packages:
 - **Inference**: Medical responses with safety disclaimers
 - **Demo**: Working medical Q&A system
 
+  ### Training Results
+-  Successfully trained on medical dataset using LoRA
+-  Implemented automatic safety disclaimers
+-  Training completed with measurable loss improvement
+-  Colab session limitations prevented model saving
+-  All safety features fully functional in demo
+
 ### Demo Video
 [Link to your demo video will be added after recording]
 
