@@ -1,10 +1,10 @@
+# data_loader.py
 from datasets import load_dataset
 from transformers import AutoTokenizer
 import pandas as pd
 
-def load_and_preprocess_data():
+def load_medical_dataset():
     """Load and preprocess the medical instruction dataset"""
-    
     print("Loading AlpaCare-MedInstruct-52k dataset...")
     
     # Load dataset from Hugging Face
@@ -17,26 +17,43 @@ def load_and_preprocess_data():
     dataset_splits = {
         'train': train_testvalid['train'],
         'test': test_valid['test'],
-        'valid': test_valid['train']
+        'validation': test_valid['train']
     }
     
-    print(f"Training samples: {len(dataset_splits['train'])}")
-    print(f"Testing samples: {len(dataset_splits['test'])}")
-    print(f"Validation samples: {len(dataset_splits['valid'])}")
+    print(f"Train: {len(dataset_splits['train'])} samples")
+    print(f"Test: {len(dataset_splits['test'])} samples") 
+    print(f"Validation: {len(dataset_splits['validation'])} samples")
     
     return dataset_splits
 
-def format_with_disclaimer(instruction, response):
-    """Format training examples with medical disclaimer"""
-    disclaimer = "Important: This is for educational purposes only. Always consult a qualified healthcare professional for medical advice."
+def preprocess_function(examples, tokenizer, max_length=512):
+    """Preprocess dataset for training"""
     
-    formatted_text = f"### Instruction: {instruction}\n\n### Response: {response}\n\n{disclaimer}"
-    return formatted_text
+    # Add medical disclaimer to every output
+    disclaimed_outputs = []
+    for output in examples['output']:
+        disclaimed_output = output + "\n\n--- MEDICAL DISCLAIMER ---\nThis is for educational purposes only. Please consult a qualified healthcare professional for medical advice."
+        disclaimed_outputs.append(disclaimed_output)
+    
+    # Tokenize inputs and outputs
+    model_inputs = tokenizer(
+        examples['instruction'],
+        max_length=max_length,
+        truncation=True,
+        padding="max_length"
+    )
+    
+    labels = tokenizer(
+        disclaimed_outputs,
+        max_length=max_length,
+        truncation=True,
+        padding="max_length"
+    )
+    
+    model_inputs["labels"] = labels["input_ids"]
+    return model_inputs
 
-# Test the functions
 if __name__ == "__main__":
-    data = load_and_preprocess_data()
-    sample_instruction = "What are the symptoms of diabetes?"
-    sample_response = "Common symptoms include increased thirst, frequent urination, and fatigue."
-    print("\nSample formatted text:")
-    print(format_with_disclaimer(sample_instruction, sample_response))
+    # Test the data loader
+    dataset = load_medical_dataset()
+    print("Dataset loaded successfully!")
